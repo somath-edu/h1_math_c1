@@ -6,7 +6,7 @@ import path from 'node:path';
 
 const vaultPath = path.join(process.cwd(), '../vault');
 const curriculumPath = path.join(vaultPath, 'curriculum.md');
-let title = "고등학교 1학년 수학";
+let title = "고등학교 공통수학 Ⅰ";
 let parsedContent: string = "";
 
 // Helper to recursively get all markdown files in vault
@@ -47,7 +47,6 @@ if (fs.existsSync(curriculumPath)) {
 	const lines = rawContent.split('\n');
 	
 	if (lines[0].startsWith('# ')) {
-		title = lines[0].replace('# ', '').trim();
 		parsedContent = lines.slice(1).join('\n').trim();
 	} else {
 		parsedContent = rawContent;
@@ -65,6 +64,42 @@ if (fs.existsSync(curriculumPath)) {
 
 <Layout title={title}>
 	<div class="paper-stack">
+		<!-- [1페이지] 디지털 교과서 표지 (Book Cover) -->
+		<div class="paper book-cover-page" id="page-cover">
+			<div class="content-border cover-border">
+				<div class="cover-top">
+					<span class="cover-badge">COMMON MATHEMATICS</span>
+					<span class="cover-category">고등학교 공통수학</span>
+				</div>
+
+				<div class="cover-center">
+					<h1 class="cover-main-title">공통수학 Ⅰ</h1>
+					<p class="cover-sub-title">핵심 개념과 실전 유형을 완벽하게 마스터하는 디지털 교과서</p>
+
+					<div class="cover-ornament">
+						<div class="ornament-line"></div>
+						<div class="ornament-diamond">❖</div>
+						<div class="ornament-line"></div>
+					</div>
+
+					<div class="cover-geometric">
+						<div class="geo-inner">
+							<span class="geo-text">AI Powered Digital Textbook</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="cover-bottom">
+					<div class="cover-credits">
+						<span class="cover-org">대한민국 수학교육 프로젝트</span>
+						<span class="cover-copy">ⓒ 2026 Mathematics Education All Rights Reserved</span>
+					</div>
+					<a href="#page-curriculum" class="scroll-toc-btn">목차 바로가기 ↓</a>
+				</div>
+			</div>
+		</div>
+
+		<!-- [2페이지] 목차 (Table of Contents) -->
 		<div class="paper" id="page-curriculum">
 			<div class="content-border">
 				<header class="curriculum-header">
@@ -94,10 +129,167 @@ if (fs.existsSync(curriculumPath)) {
 <style>
 	.paper-stack {
 		display: flex;
-		justify-content: center;
+		flex-direction: column;
+		align-items: center;
+		gap: 5rem;
 		width: 100%;
 	}
 
+	/* 표지 페이지 고유 스타일 (Book Cover) */
+	.book-cover-page {
+		border-left: 5px solid #a48f76;
+		background: #fdfaf5;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+	}
+
+	.cover-border {
+		border: 1px solid #ebd9c5;
+		padding: 3rem 2.5rem;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		height: 100%;
+		box-sizing: border-box;
+	}
+
+	.cover-top {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.6rem;
+		font-family: 'Noto Serif KR', serif;
+	}
+
+	.cover-badge {
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: #a48f76;
+		letter-spacing: 0.18em;
+	}
+
+	.cover-category {
+		font-size: 1.15rem;
+		font-weight: 600;
+		color: #555555;
+		letter-spacing: 0.05em;
+	}
+
+	.cover-center {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		margin: auto 0;
+	}
+
+	.cover-main-title {
+		font-family: 'Noto Serif KR', serif;
+		font-size: 3.5rem;
+		font-weight: 900;
+		color: #1a1a1a;
+		letter-spacing: 0.08em;
+		margin: 0 0 1.2rem 0;
+		line-height: 1.2;
+	}
+
+	.cover-sub-title {
+		font-family: 'Noto Serif KR', serif;
+		font-size: 1.1rem;
+		color: #5a5249;
+		margin: 0;
+		line-height: 1.6;
+		max-width: 85%;
+	}
+
+	.cover-ornament {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem;
+		width: 100%;
+		margin: 2rem 0;
+	}
+
+	.ornament-line {
+		height: 1px;
+		width: 100px;
+		background: linear-gradient(90deg, transparent, #cabaa8, transparent);
+	}
+
+	.ornament-diamond {
+		color: #a48f76;
+		font-size: 0.95rem;
+	}
+
+	.cover-geometric {
+		margin-top: 1rem;
+		padding: 1rem 2.2rem;
+		border: 1px solid #ebd9c5;
+		border-radius: 4px;
+		background: #faf6f0;
+	}
+
+	.geo-inner {
+		font-family: 'Noto Serif KR', serif;
+		font-size: 0.9rem;
+		font-weight: 500;
+		color: #8c7b69;
+		letter-spacing: 0.08em;
+	}
+
+	.cover-bottom {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1.5rem;
+		margin-top: auto;
+		padding-top: 2rem;
+	}
+
+	.cover-credits {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.4rem;
+		font-family: 'Noto Serif KR', serif;
+	}
+
+	.cover-org {
+		font-size: 1.15rem;
+		font-weight: 700;
+		color: #3d342c;
+		letter-spacing: 0.04em;
+	}
+
+	.cover-copy {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: #7c7164;
+	}
+
+	.scroll-toc-btn {
+		display: inline-block;
+		padding: 0.65rem 1.6rem;
+		background-color: #3d342c;
+		color: #ffffff;
+		font-family: 'Noto Serif KR', serif;
+		font-size: 0.95rem;
+		font-weight: 600;
+		border-radius: 4px;
+		text-decoration: none;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+		transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+	}
+
+	.scroll-toc-btn:hover {
+		transform: translateY(-2px);
+		background-color: #55483d;
+		box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+	}
+
+	/* 기존 목차 페이지 스타일 */
 	.curriculum-header {
 		border-bottom: 2px solid #333333;
 		padding-bottom: 1.5rem;
@@ -113,6 +305,10 @@ if (fs.existsSync(curriculumPath)) {
 		font-weight: 500;
 		letter-spacing: 0.05em;
 		margin-bottom: 1.2rem;
+	}
+
+	.textbook-label {
+		font-family: 'Noto Serif KR', serif;
 	}
 
 	.curriculum-title {
