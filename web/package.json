@@ -1,0 +1,20 @@
+{
+  "name": "h1-math-c1-web",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check": "node ../scripts/check-formula.js"
+  },
+  "dependencies": {
+    "astro": "^6.1.7",
+    "katex": "^0.16.45"
+  },
+  "devDependencies": {
+    "@astrojs/node": "^10.0.6",
+    "@types/node": "^25.6.0"
+  }
+}
