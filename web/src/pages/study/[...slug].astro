@@ -85,14 +85,38 @@ function parseWikiLinks(text: string) {
 }
 
 function processContent(raw: string) {
-	// 1. ::: blocks parsing
-	const segments = raw.split(':::');
-	let cleaned = segments[0];
-	
+	// 1. Container Blocks Parsing (Problem → Step → Grid → fallback card)
+
+	// STEP 1: :::problem
+	let cleaned = raw.replace(/:::problem([\s\S]*?):::/g, (_, body) => {
+		return `<div class="problem-focus-card"><div class="problem-label">REPRESENTATIVE PROBLEM</div><div class="problem-statement">${body.trim()}</div></div>`;
+	});
+
+	// STEP 2: :::step N title\ncontent:::
+	cleaned = cleaned.replace(/:::step\s*(\d+)\s+(.*?)\n([\s\S]*?):::/g, (_, num, title, body) => {
+		return `<div class="step-item"><div class="step-header"><div class="step-number">${num}</div><div class="step-title">${title.trim()}</div></div><div class="step-content">${body.trim()}</div></div>`;
+	});
+
+	// STEP 3: :::grid blocks (parse inner grid-items first, then wrap)
+	cleaned = cleaned.replace(/:::grid([\s\S]*?):::/g, (_, gridBody) => {
+		// Parse inner :::grid-item title\ncontent:::
+		const items = gridBody.replace(/:::grid-item\s+(.*?)\n([\s\S]*?):::/g, (__, itemTitle, itemBody) => {
+			return `<div class="concept-grid-item"><h4>${itemTitle.trim()}</h4><p>${itemBody.trim()}</p></div>`;
+		});
+		return `<div class="concept-grid">${items}</div>`;
+	});
+
+	// STEP 3.5: :::video title | src
+	cleaned = cleaned.replace(/:::video\s+(.*?)\|\s*(.*?)\s*:::/gs, (_, title, src) => {
+		return `<div class="video-section"><div class="video-header"><span class="video-label">📽 풀이 영상</span><span class="video-title">${title.trim()}</span></div><div class="video-wrapper"><video controls playsinline><source src="${src.trim()}" type="video/mp4" />브라우저가 비디오 재생을 지원하지 않습니다.</video></div></div>`;
+	});
+
+	// STEP 4: Existing :::card fallback logic
+	const segments = cleaned.split(':::');
+	cleaned = segments[0];
 	for (let i = 1; i < segments.length; i += 2) {
 		const block = segments[i];
 		const nextText = segments[i+1] || '';
-		
 		const firstNewline = block.indexOf('\n');
 		if (firstNewline !== -1) {
 			const type = block.substring(0, firstNewline).trim();
@@ -119,13 +143,24 @@ function processContent(raw: string) {
 	const instrHTML = renderInlineMath(cleaned);
 	let restHTML = renderDisplayMath(instrHTML);
 	
-	const parts = restHTML.split(/(<div class="card .*?">.*?<\/div>|<div class="math-display">.*?<\/div>|<span class="math-inline">.*?<\/span>|<span class="katex">.*?<\/span>|<span class="katex-display">.*?<\/span>)/gs);
+	const parts = restHTML.split(/(<div class="card .*?">.*?<\/div>|<div class="math-display">.*?<\/div>|<div class="step-item">.*?<\/div>|<div class="problem-focus-card">.*?<\/div>|<div class="video-section">.*?<\/div>|<span class="math-inline">.*?<\/span>|<span class="katex">.*?<\/span>|<span class="katex-display">.*?<\/span>)/gs);
 	restHTML = parts.map(p => {
-		if (p.startsWith('<div class="card') || p.startsWith('<div class="math-display">') || p.startsWith('<span class="math-inline') || p.startsWith('<span class="katex') || p.startsWith('<span class="katex-display')) return p;
+		if (
+			p.startsWith('<div class="card') ||
+			p.startsWith('<div class="math-display">') ||
+			p.startsWith('<div class="step-item">') ||
+			p.startsWith('<div class="problem-focus-card">') ||
+			p.startsWith('<div class="video-section">') ||
+			p.startsWith('<span class="math-inline') ||
+			p.startsWith('<span class="katex') ||
+			p.startsWith('<span class="katex-display')
+		) return p;
 		return p.replace(/\n/g, '<br/>');
 	}).join('');
 
-	restHTML = restHTML.replace(/(<\/div>|<\/h4>|<\/blockquote>)(<br\/>)+/g, '$1');
+	restHTML = restHTML.replace(/<\/div>(<br\/>)+/g, '</div>');
+	restHTML = restHTML.replace(/<\/h4>(<br\/>)+/g, '</h4>');
+	restHTML = restHTML.replace(/<\/blockquote>(<br\/>)+/g, '</blockquote>');
 
 	restHTML = restHTML
 		.replace(/<div class="concept-grid"><br\/>/g, '<div class="concept-grid">')
@@ -138,11 +173,27 @@ function processContent(raw: string) {
 
 // Parse Study Page
 const lines = content.split('\n');
-const title = lines[0].startsWith('# ') ? lines[0].replace('# ', '').trim() : "개념 학습";
-const body = lines[0].startsWith('# ') ? lines.slice(1).join('\n').trim() : content;
+let pageNum = "00";
+let rawBody = content;
+
+// Frontmatter parsing (simple)
+if (content.startsWith('---')) {
+	const endIdx = content.indexOf('---', 3);
+	if (endIdx !== -1) {
+		const frontmatter = content.substring(3, endIdx);
+		const pageMatch = frontmatter.match(/pageNum:\s*"(.*?)"/);
+		if (pageMatch) pageNum = pageMatch[1];
+		rawBody = content.substring(endIdx + 3).trim();
+	}
+}
+
+const bodyLines = rawBody.split('\n');
+const title = bodyLines[0].startsWith('# ') ? bodyLines[0].replace('# ', '').trim() : "개념 학습";
+const body = bodyLines[0].startsWith('# ') ? bodyLines.slice(1).join('\n').trim() : rawBody;
 
 const section = {
 	title,
+	pageNum,
 	content: processContent(body)
 };
 ---
@@ -157,7 +208,7 @@ const section = {
 							<span class="id-label">고등학교 교과서</span>
 							<a href="/h1_math_c1/curriculum/" class="home-link" title="전체 목록보기">🏠</a>
 						</div>
-						<span class="page-num">02</span>
+						<span class="page-num">{section.pageNum}</span>
 					</div>
 					<h2 class="study-title">{section.title}</h2>
 				</header>
@@ -182,6 +233,9 @@ const section = {
 		display: flex;
 		justify-content: center;
 		width: 100%;
+		padding: clamp(1rem, 3vw, 3rem) 0;
+		background: #f0f0f0;
+		min-height: 100vh;
 	}
 
 	.study-header {
@@ -191,6 +245,10 @@ const section = {
 		display: flex;
 		flex-direction: column;
 		justify-content: flex-end;
+		max-width: 800px;
+		margin-left: auto;
+		margin-right: auto;
+		width: 100%;
 	}
 
 	.header-top {
@@ -228,12 +286,12 @@ const section = {
 	}
 	.study-title {
 		font-family: 'Noto Serif KR', serif;
-		font-size: 2.4rem;
+		font-size: clamp(1.8rem, 5vw, 2.6rem);
 		margin: 0.5rem 0 0 0;
 		color: #1a1a1a;
 		font-weight: 800;
-		letter-spacing: -0.01em;
-		line-height: 1.3;
+		letter-spacing: -0.02em;
+		line-height: 1.2;
 		text-align: center;
 	}
 	@media (max-width: 768px) {
@@ -252,7 +310,10 @@ const section = {
 		min-height: 135mm;
 		font-family: 'Noto Sans KR', sans-serif;
 		color: #1a1a1a;
-		line-height: 1.95;
+		line-height: 1.8;
+		max-width: 800px;
+		margin: 0 auto;
+		width: 100%;
 	}
 
 	:global(p) {
@@ -282,14 +343,15 @@ const section = {
 	}
 
 	:global(.card) {
-		padding: 1.35rem 1.6rem;
-		margin: 0.8rem 0;
-		line-height: 1.95;
+		padding: clamp(1rem, 3vw, 1.5rem) clamp(1.2rem, 4vw, 1.8rem);
+		margin: 1.2rem 0;
+		line-height: 1.8;
 		font-size: 1.05rem;
 		border: none;
-		border-left: 3.5px solid #dfc3a3;
+		border-left: 4px solid #dfc3a3;
 		background: #faf6f0;
 		text-align: left;
+		border-radius: 0 8px 8px 0;
 	}
 
 
@@ -426,10 +488,153 @@ const section = {
 		border-radius: 2px;
 	}
 
+	/* --- New Visual Components --- */
+	:global(.problem-focus-card) {
+		background: #1e293b; /* Deep Indigo */
+		color: #ffffff;
+		border-radius: 12px;
+		padding: clamp(1.5rem, 5vw, 2.5rem);
+		margin: 2.5rem 0;
+		box-shadow: 0 12px 40px rgba(30, 41, 59, 0.25);
+		position: relative;
+		overflow: hidden;
+		border: 1px solid rgba(255, 255, 255, 0.05);
+	}
+	:global(.problem-focus-card::before) {
+		content: "";
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 5px;
+		height: 100%;
+		background: linear-gradient(to bottom, #dfc3a3, #b89b7d);
+	}
+	:global(.problem-label) {
+		font-family: 'Noto Serif KR', serif;
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.15em;
+		color: #dfc3a3;
+		margin-bottom: 1.2rem;
+		text-transform: uppercase;
+	}
+	:global(.problem-statement) {
+		font-family: 'Noto Serif KR', serif;
+		font-size: 1.3rem;
+		line-height: 1.8;
+		font-weight: 500;
+		word-break: keep-all;
+		overflow-wrap: break-word;
+	}
+	:global(.problem-statement .math-inline), :global(.problem-statement .math-display) {
+		color: #ffffff;
+	}
+
+	:global(.step-item) {
+		margin: 2rem 0;
+		border-left: 2px solid #ebd9c5;
+		padding-left: clamp(1.2rem, 4vw, 2rem);
+		position: relative;
+	}
+	:global(.step-header) {
+		display: flex;
+		align-items: center;
+		gap: 0.8rem;
+		margin-bottom: 0.8rem;
+	}
+	:global(.step-number) {
+		background: #3d342c;
+		color: #ffffff;
+		width: 24px;
+		height: 24px;
+		border-radius: 4px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 0.8rem;
+		font-weight: 700;
+		flex-shrink: 0;
+	}
+	:global(.step-title) {
+		font-weight: 700;
+		font-size: 1.1rem;
+		color: #3d342c;
+	}
+	:global(.step-content) {
+		font-size: 1.05rem;
+		color: #4a4135;
+	}
+
+	:global(.math-display) {
+		margin: 1.2rem 0;
+		padding: 0.5rem 0;
+		overflow-x: auto;
+	}
+	:global(.math-display .katex-display) {
+		margin: 0;
+		text-align: left !important;
+	}
+
+	/* --- Video Section --- */
+	:global(.video-section) {
+		margin: 3.5rem 0 0 0;
+		padding-top: 2.5rem;
+		border-top: 1px solid #ebd9c5;
+	}
+	:global(.video-header) {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		margin-bottom: 1.2rem;
+	}
+	:global(.video-label) {
+		font-family: 'Noto Serif KR', serif;
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.15em;
+		color: #a48f76;
+		text-transform: uppercase;
+		background: #faf6f0;
+		border: 1px solid #ebd9c5;
+		border-radius: 4px;
+		padding: 0.2rem 0.6rem;
+		display: inline-block;
+	}
+	:global(.video-title) {
+		font-family: 'Noto Serif KR', serif;
+		font-size: 1.1rem;
+		font-weight: 700;
+		color: #3d342c;
+		letter-spacing: -0.01em;
+		margin: 0;
+	}
+	:global(.video-wrapper) {
+		width: 100%;
+		background: #0f0f0f;
+		border-radius: 10px;
+		overflow: hidden;
+		box-shadow:
+			0 2px 8px rgba(0,0,0,0.08),
+			0 12px 40px rgba(0,0,0,0.15);
+		border: 1px solid #222;
+		position: relative;
+		aspect-ratio: 16 / 9;
+	}
+	:global(.video-wrapper video) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+	}
+
 	.exam-footer {
-		margin-top: auto;
+		margin-top: 3rem;
 		padding-top: 1.5rem;
 		border-top: 1px solid #dfd7c7;
+		max-width: 800px;
+		margin-left: auto;
+		margin-right: auto;
+		width: 100%;
 	}
 	.footer-row {
 		display: flex;

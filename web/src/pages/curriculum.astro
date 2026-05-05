@@ -104,6 +104,10 @@ if (fs.existsSync(curriculumPath)) {
 		border-bottom: 2px solid #333333;
 		padding-bottom: 1.5rem;
 		margin-bottom: 2.5rem;
+		max-width: 800px;
+		margin-left: auto;
+		margin-right: auto;
+		width: 100%;
 	}
 
 	.header-top {
@@ -159,11 +163,15 @@ if (fs.existsSync(curriculumPath)) {
 	}
 
 	.curriculum-body {
-		min-height: 140mm;
+		flex: 1;
 		display: flex;
 		flex-direction: column;
 		gap: 2rem;
 		font-family: 'Noto Serif KR', serif;
+		max-width: 800px;
+		margin-left: auto;
+		margin-right: auto;
+		width: 100%;
 	}
 
 	:global(.unit-section) {
@@ -237,9 +245,13 @@ if (fs.existsSync(curriculumPath)) {
 	}
 
 	.curriculum-footer {
-		margin-top: auto;
+		margin-top: 3rem;
 		padding-top: 1.5rem;
 		border-top: 1px solid #dfd7c7;
+		max-width: 800px;
+		margin-left: auto;
+		margin-right: auto;
+		width: 100%;
 	}
 	.footer-row {
 		display: flex;
