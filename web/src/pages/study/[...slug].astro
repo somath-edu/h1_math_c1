@@ -140,8 +140,8 @@ function processContent(raw: string) {
 
 	cleaned = cleaned.replace(/★ (.*)/g, '<div class="star-item"><span class="star-icon">★</span> <span class="star-text">$1</span></div>');
 	
-	const instrHTML = renderInlineMath(cleaned);
-	let restHTML = renderDisplayMath(instrHTML);
+	let restHTML = renderDisplayMath(cleaned);
+	restHTML = renderInlineMath(restHTML);
 	
 	const parts = restHTML.split(/(<div class="card .*?">.*?<\/div>|<div class="math-display">.*?<\/div>|<div class="step-item">.*?<\/div>|<div class="problem-focus-card">.*?<\/div>|<div class="video-section">.*?<\/div>|<span class="math-inline">.*?<\/span>|<span class="katex">.*?<\/span>|<span class="katex-display">.*?<\/span>)/gs);
 	restHTML = parts.map(p => {
@@ -536,29 +536,35 @@ const section = {
 		padding-left: clamp(1.2rem, 4vw, 2rem);
 		position: relative;
 	}
+	:global(.step-item:first-of-type) {
+		margin-top: 0;
+	}
 	:global(.step-header) {
 		display: flex;
 		align-items: center;
 		gap: 0.8rem;
-		margin-bottom: 0.8rem;
+		margin-bottom: 1rem;
+		line-height: 1; /* 기준선 정렬을 위해 1로 설정 */
 	}
 	:global(.step-number) {
 		background: #3d342c;
 		color: #ffffff;
-		width: 24px;
-		height: 24px;
-		border-radius: 4px;
-		display: flex;
+		width: 26px;
+		height: 26px;
+		border-radius: 6px;
+		display: inline-flex; /* inline-flex로 정밀 제어 */
 		align-items: center;
 		justify-content: center;
-		font-size: 0.8rem;
-		font-weight: 700;
+		font-size: 0.85rem;
+		font-weight: 800;
 		flex-shrink: 0;
 	}
 	:global(.step-title) {
-		font-weight: 700;
+		font-weight: 800;
 		font-size: 1.1rem;
 		color: #3d342c;
+		display: inline-block;
+		vertical-align: middle;
 	}
 	:global(.step-content) {
 		font-size: 1.05rem;

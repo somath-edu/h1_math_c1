@@ -44,3 +44,9 @@ $$
 
 :::video 차수의 질서: 내림차순 정리 실전 풀이 영상 | /h1_math_c1/videos/003.ActiveDescending.mp4
 :::
+
+:::card practice
+### ✍️ 실전 연습문제 도전
+다양한 난이도의 연습문제로 실력을 점검해 보세요.
+[[concept_3_p|연습문제 풀러 가기 ➔]]
+:::

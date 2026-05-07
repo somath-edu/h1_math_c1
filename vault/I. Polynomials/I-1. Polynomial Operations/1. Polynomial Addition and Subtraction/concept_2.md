@@ -51,3 +51,9 @@ $$
 
 :::video 연산의 법칙: 복잡한 식의 단순화 및 계산 풀이 영상 | /h1_math_c1/videos/002.PolynomialOrder.mp4
 :::
+
+:::card practice
+### ✍️ 실전 연습문제 도전
+다양한 난이도의 연습문제로 실력을 점검해 보세요.
+[[concept_2_p|연습문제 풀러 가기 ➔]]
+:::

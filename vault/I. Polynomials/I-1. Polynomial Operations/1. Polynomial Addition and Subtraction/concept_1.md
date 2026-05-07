@@ -44,3 +44,9 @@ $$
 
 :::video 다항식의 정리: 동류항 결합 과정 풀이 영상 | /h1_math_c1/videos/001.ArchedPolynomial.mp4
 :::
+
+:::card practice
+### ✍️ 실전 연습문제 도전
+다양한 난이도의 연습문제로 실력을 점검해 보세요.
+[[concept_1_p|연습문제 풀러 가기 ➔]]
+:::
